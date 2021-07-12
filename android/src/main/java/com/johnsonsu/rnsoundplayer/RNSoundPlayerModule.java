@@ -190,7 +190,8 @@ public class RNSoundPlayerModule extends ReactContextBaseJavaModule {
         // See https://developer.android.com/reference/android/media/MediaPlayer#create(android.content.Context,%20android.net.Uri)
         WritableMap params = Arguments.createMap();
         params.putBoolean("success", false);
-        sendEvent(getReactApplicationContext(), EVENT_FINISHED_LOADING, params);
+        params.putString("url", url);
+        sendEvent(getReactApplicationContext(), EVENT_FINISHED_LOADING_URL, params);
         return;
       }
       this.mediaPlayer.setOnCompletionListener(
@@ -223,7 +224,8 @@ public class RNSoundPlayerModule extends ReactContextBaseJavaModule {
       } catch (Exception e) {
         WritableMap params = Arguments.createMap();
         params.putBoolean("success", false);
-        sendEvent(getReactApplicationContext(), EVENT_FINISHED_LOADING, params);
+        params.putString("url", url);
+        sendEvent(getReactApplicationContext(), EVENT_FINISHED_LOADING_URL, params);
         this.mediaPlayer.release();
         this.mediaPlayer = null;
         return;
