@@ -185,6 +185,14 @@ public class RNSoundPlayerModule extends ReactContextBaseJavaModule {
     if (this.mediaPlayer == null) {
       Uri uri = Uri.parse(url);
       this.mediaPlayer = MediaPlayer.create(getCurrentActivity(), uri);
+      if (this.mediaPlayer == null) {
+        // MediaPlayer can be null if the creation fails.
+        // See https://developer.android.com/reference/android/media/MediaPlayer#create(android.content.Context,%20android.net.Uri)
+        WritableMap params = Arguments.createMap();
+        params.putBoolean("success", false);
+        sendEvent(getReactApplicationContext(), EVENT_FINISHED_LOADING, params);
+        return;
+      }
       this.mediaPlayer.setOnCompletionListener(
         new OnCompletionListener() {
           @Override
@@ -208,7 +216,19 @@ public class RNSoundPlayerModule extends ReactContextBaseJavaModule {
     } else {
       Uri uri = Uri.parse(url);
       this.mediaPlayer.reset();
-      this.mediaPlayer.setDataSource(getCurrentActivity(), uri);
+      // setDataSource can fail for several reasons.
+      // So, we need to make sure we can handle those cases.
+      try {
+        this.mediaPlayer.setDataSource(getCurrentActivity(), uri);
+      } catch (Exception e) {
+        WritableMap params = Arguments.createMap();
+        params.putBoolean("success", false);
+        sendEvent(getReactApplicationContext(), EVENT_FINISHED_LOADING, params);
+        this.mediaPlayer.release();
+        this.mediaPlayer = null;
+        return;
+      }
+
       this.mediaPlayer.prepareAsync();
     }
     WritableMap params = Arguments.createMap();
