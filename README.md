@@ -2,15 +2,17 @@
 
 Play audio files, stream audio from URL, using ReactNative.
 
+This project is a fork of https://github.com/johnsonsu/react-native-sound-player, using ExoPlayer instead of MediaPlayer on Android.
+
 ## Installation
 
 ### 1. `yarn` or `npm`
 
 ```
     // yarn
-    yarn add react-native-sound-player
+    yarn add https://github.com/IDM-desaive/react-native-sound-player.git
     // or npm
-    npm install --save react-native-sound-player
+    npm install --save https://github.com/IDM-desaive/react-native-sound-player.git
 ```
 
 ### 2. Link
@@ -21,6 +23,11 @@ For RN >= 0.60 you can skip this step.
     react-native link react-native-sound-player
 ```
 
+On iOS, don't forget to execute 
+```
+    cd ios
+    pod install
+```
 ## Usage
 
 ### Play sound with file name and type
@@ -74,6 +81,7 @@ file is loaded.
 Play the audio from url. Supported formats are:
 
 -   [AVPlayer (iOS)](https://stackoverflow.com/questions/21879981/avfoundation-avplayer-supported-formats-no-vob-or-mpg-containers)
+-   [ExoPlayer (Android)](https://exoplayer.dev/supported-formats.html)    
 -   [MediaPlayer (Android)](https://developer.android.com/guide/topics/media/media-formats)
 
 ### `loadUrl(url: string)`
