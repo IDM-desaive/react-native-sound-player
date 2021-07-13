@@ -1,23 +1,28 @@
 package com.johnsonsu.rnsoundplayer;
 
+import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.net.Uri;
+import android.os.Build;
+
 import java.io.File;
 
 import java.io.IOException;
+
 import javax.annotation.Nullable;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.Callback;
-import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
+
+import okhttp3.OkHttpClient;
 
 
 public class RNSoundPlayerModule extends ReactContextBaseJavaModule {
@@ -30,6 +35,8 @@ public class RNSoundPlayerModule extends ReactContextBaseJavaModule {
   private final ReactApplicationContext reactContext;
   private MediaPlayer mediaPlayer;
   private float volume;
+
+  private OkHttpClient okHttpClient;
 
   public RNSoundPlayerModule(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -103,7 +110,7 @@ public class RNSoundPlayerModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void getInfo(
-      Promise promise) {
+          Promise promise) {
     if (this.mediaPlayer == null) {
       promise.resolve(null);
       return;
@@ -115,11 +122,11 @@ public class RNSoundPlayerModule extends ReactContextBaseJavaModule {
   }
 
   private void sendEvent(ReactApplicationContext reactContext,
-                       String eventName,
-                       @Nullable WritableMap params) {
+          String eventName,
+          @Nullable WritableMap params) {
     reactContext
-        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-        .emit(eventName, params);
+            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+            .emit(eventName, params);
   }
 
   private void mountSoundFile(String name, String type) throws IOException {
@@ -133,14 +140,14 @@ public class RNSoundPlayerModule extends ReactContextBaseJavaModule {
       }
 
       this.mediaPlayer.setOnCompletionListener(
-        new OnCompletionListener() {
-          @Override
-          public void onCompletion(MediaPlayer arg0) {
-            WritableMap params = Arguments.createMap();
-            params.putBoolean("success", true);
-            sendEvent(getReactApplicationContext(), EVENT_FINISHED_PLAYING, params);
-          }
-      });
+              new OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer arg0) {
+                  WritableMap params = Arguments.createMap();
+                  params.putBoolean("success", true);
+                  sendEvent(getReactApplicationContext(), EVENT_FINISHED_PLAYING, params);
+                }
+              });
     } else {
       Uri uri;
       int soundResID = getReactApplicationContext().getResources().getIdentifier(name, "raw", getReactApplicationContext().getPackageName());
@@ -181,60 +188,102 @@ public class RNSoundPlayerModule extends ReactContextBaseJavaModule {
     return Uri.parse("file://" + folder + "/" + file);
   }
 
-  private void prepareUrl(final String url) throws IOException {
+  private void setMediaPlayerListeners(final String url) {
     if (this.mediaPlayer == null) {
-      Uri uri = Uri.parse(url);
-      this.mediaPlayer = MediaPlayer.create(getCurrentActivity(), uri);
-      if (this.mediaPlayer == null) {
-        // MediaPlayer can be null if the creation fails.
-        // See https://developer.android.com/reference/android/media/MediaPlayer#create(android.content.Context,%20android.net.Uri)
-        WritableMap params = Arguments.createMap();
-        params.putBoolean("success", false);
-        params.putString("url", url);
-        sendEvent(getReactApplicationContext(), EVENT_FINISHED_LOADING_URL, params);
-        return;
-      }
-      this.mediaPlayer.setOnCompletionListener(
-        new OnCompletionListener() {
-          @Override
-          public void onCompletion(MediaPlayer arg0) {
-            WritableMap params = Arguments.createMap();
-            params.putBoolean("success", true);
-            sendEvent(getReactApplicationContext(), EVENT_FINISHED_PLAYING, params);
-          }
-      });
-      this.mediaPlayer.setOnPreparedListener(
-        new OnPreparedListener() {
-          @Override
-          public void onPrepared(MediaPlayer mediaPlayer) {
-            WritableMap onFinishedLoadingURLParams = Arguments.createMap();
-            onFinishedLoadingURLParams.putBoolean("success", true);
-            onFinishedLoadingURLParams.putString("url", url);
-            sendEvent(getReactApplicationContext(), EVENT_FINISHED_LOADING_URL, onFinishedLoadingURLParams);
-          }
-        }
-      );
-    } else {
-      Uri uri = Uri.parse(url);
-      this.mediaPlayer.reset();
-      // setDataSource can fail for several reasons.
-      // So, we need to make sure we can handle those cases.
-      try {
-        this.mediaPlayer.setDataSource(getCurrentActivity(), uri);
-      } catch (Exception e) {
-        WritableMap params = Arguments.createMap();
-        params.putBoolean("success", false);
-        params.putString("url", url);
-        sendEvent(getReactApplicationContext(), EVENT_FINISHED_LOADING_URL, params);
-        this.mediaPlayer.release();
-        this.mediaPlayer = null;
-        return;
-      }
-
-      this.mediaPlayer.prepareAsync();
+      return;
     }
+
+    mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+      @Override
+      public boolean onError(MediaPlayer mp, int what, int extra) {
+        String whatString = "Media Error Unknown";
+        if (MediaPlayer.MEDIA_ERROR_SERVER_DIED == what) {
+          whatString = "Media Error Server Died";
+        }
+        String extraString = "Unknown";
+        switch (extra) {
+        case MediaPlayer.MEDIA_ERROR_IO:
+          extraString = "Media Error IO";
+          break;
+        case MediaPlayer.MEDIA_ERROR_MALFORMED:
+          extraString = "Media Error Malformed";
+          break;
+        case MediaPlayer.MEDIA_ERROR_UNSUPPORTED:
+          extraString = "Media Error Unsupported";
+          break;
+        case MediaPlayer.MEDIA_ERROR_TIMED_OUT:
+          extraString = "Media Error Timed Out";
+          break;
+        case -2147483648:
+          extraString = "Low-level System Error";
+          break;
+        }
+        mp.reset();
+
+        WritableMap params = Arguments.createMap();
+        params.putBoolean("success", false);
+        params.putString("url", url);
+
+        WritableMap extraMap = Arguments.createMap();
+        extraMap.putInt("what", extra);
+        extraMap.putString("whatString", whatString);
+        extraMap.putInt("extra", extra);
+        extraMap.putString("extraString", extraString);
+        params.putMap("extra", extraMap);
+
+        sendEvent(getReactApplicationContext(), EVENT_FINISHED_LOADING_URL, params);
+
+        return true;
+      }
+    });
+    this.mediaPlayer.setOnCompletionListener(
+            new OnCompletionListener() {
+              @Override
+              public void onCompletion(MediaPlayer arg0) {
+                WritableMap params = Arguments.createMap();
+                params.putBoolean("success", true);
+                sendEvent(getReactApplicationContext(), EVENT_FINISHED_PLAYING, params);
+              }
+            });
+    this.mediaPlayer.setOnPreparedListener(
+            new OnPreparedListener() {
+              @Override
+              public void onPrepared(MediaPlayer mediaPlayer) {
+                WritableMap onFinishedLoadingURLParams = Arguments.createMap();
+                onFinishedLoadingURLParams.putBoolean("success", true);
+                onFinishedLoadingURLParams.putString("url", url);
+                sendEvent(getReactApplicationContext(), EVENT_FINISHED_LOADING_URL, onFinishedLoadingURLParams);
+              }
+            }
+    );
+  }
+
+  private void prepareUrl(final String url) throws IOException {
+    Uri uri = Uri.parse(url);
+    if (this.mediaPlayer == null) {
+      this.mediaPlayer = new MediaPlayer();
+      this.setMediaPlayerListeners(url);
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        mediaPlayer.setAudioAttributes(
+                new AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setLegacyStreamType(AudioManager.STREAM_MUSIC).build());
+      } else {
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+      }
+    } else {
+      this.mediaPlayer.reset();
+    }
+    setDataSource(uri);
+    this.mediaPlayer.prepareAsync();
+
     WritableMap params = Arguments.createMap();
     params.putBoolean("success", true);
     sendEvent(getReactApplicationContext(), EVENT_FINISHED_LOADING, params);
+  }
+
+  private void setDataSource(final Uri uri) throws IOException {
+    mediaPlayer.setDataSource(getCurrentActivity(), uri);
   }
 }

@@ -7,11 +7,19 @@ declare module "react-native-sound-player" {
     | "FinishedLoadingURL"
     | "FinishedLoadingFile";
 
+  export type AndroidMediaPlayerError = {
+    what: number;
+    extra?: number;
+    whatString: string;
+    extraString: string;
+  };
+
   export type SoundPlayerEventData = {
     success?: boolean;
     url?: string;
     name?: string;
     type?: string;
+    androidMediaError?: AndroidMediaPlayerError;
   };
 
   interface SoundPlayerType {
