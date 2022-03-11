@@ -16,7 +16,7 @@ static NSString *const EVENT_FINISHED_PLAYING = @"FinishedPlaying";
 
 RCT_EXPORT_METHOD(playUrl:(NSString *)url) {
     [self prepareUrl:url];
-    [self.avPlayer play];
+    [self.player play];
 }
 
 RCT_EXPORT_METHOD(loadUrl:(NSString *)url) {
@@ -45,17 +45,11 @@ RCT_EXPORT_METHOD(pause) {
     if (self.player != nil) {
         [self.player pause];
     }
-    if (self.avPlayer != nil) {
-        [self.avPlayer pause];
-    }
 }
 
 RCT_EXPORT_METHOD(resume) {
     if (self.player != nil) {
         [self.player play];
-    }
-    if (self.avPlayer != nil) {
-        [self.avPlayer play];
     }
 }
 
@@ -63,17 +57,11 @@ RCT_EXPORT_METHOD(stop) {
     if (self.player != nil) {
         [self.player stop];
     }
-    if (self.avPlayer != nil) {
-        [self.avPlayer pause];
-    }
 }
 
 RCT_EXPORT_METHOD(seek:(float)seconds) {
     if (self.player != nil) {
         self.player.currentTime = seconds;
-    }
-    if (self.avPlayer != nil) {
-        [self.avPlayer seekToTime: CMTimeMakeWithSeconds(seconds, 1.0)];
     }
 }
 
@@ -93,9 +81,6 @@ RCT_EXPORT_METHOD(setVolume:(float)volume) {
     if (self.player != nil) {
         [self.player setVolume: volume];
     }
-    if (self.avPlayer != nil) {
-        [self.avPlayer setVolume: volume];
-    }
 }
 
 RCT_REMAP_METHOD(getInfo,
@@ -108,15 +93,6 @@ RCT_REMAP_METHOD(getInfo,
                                };
         resolve(data);
     }
-    if (self.avPlayer != nil) {
-        CMTime currentTime = [[self.avPlayer currentItem] currentTime];
-        CMTime duration = [[[self.avPlayer currentItem] asset] duration];
-        NSDictionary *data = @{
-                               @"currentTime": [NSNumber numberWithFloat:CMTimeGetSeconds(currentTime)],
-                               @"duration": [NSNumber numberWithFloat:CMTimeGetSeconds(duration)]
-                               };
-        resolve(data);
-    }
     resolve(nil);
 }
 
@@ -124,15 +100,16 @@ RCT_REMAP_METHOD(getInfo,
     [self sendEventWithName:EVENT_FINISHED_PLAYING body:@{@"success": [NSNumber numberWithBool:flag]}];
 }
 
+- (void) audioPlayerDecodeErrorDidOccur:(AVAudioPlayer *)player error:(NSError *)error {
+    NSLog(@"%@",[error localizedDescription]);
+    [self sendEventWithName:EVENT_FINISHED_PLAYING body:@{@"success": [NSNumber numberWithBool:false]}];
+}
+
 - (void) itemDidFinishPlaying:(NSNotification *) notification {
     [self sendEventWithName:EVENT_FINISHED_PLAYING body:@{@"success": [NSNumber numberWithBool:TRUE]}];
 }
 
 - (void) mountSoundFile:(NSString *)name ofType:(NSString *)type {
-    if (self.avPlayer) {
-        self.avPlayer = nil;
-    }
-
     NSString *soundFilePath = [[NSBundle mainBundle] pathForResource:name ofType:type];
 
     if (soundFilePath == nil) {
@@ -154,19 +131,22 @@ RCT_REMAP_METHOD(getInfo,
 }
 
 - (void) prepareUrl:(NSString *)url {
-    if (self.player) {
-        self.player = nil;
-    }
     NSURL *soundURL = [NSURL URLWithString:url];
-
-    if (!self.avPlayer) {
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(itemDidFinishPlaying:) name:AVPlayerItemDidPlayToEndTimeNotification object:nil];
+    NSError *error;
+    NSData *data = [NSData dataWithContentsOfURL:soundURL];
+    self.player = [[AVAudioPlayer alloc] initWithData:data error:&error];
+    if (self.player) {
+        [self.player setDelegate:self];
+        self.player.enableRate = YES;
+        [self.player prepareToPlay];
+        [self sendEventWithName:EVENT_FINISHED_LOADING body:@{@"success": [NSNumber numberWithBool:true]}];
+        [self sendEventWithName:EVENT_FINISHED_LOADING_URL body: @{@"success": [NSNumber numberWithBool:true], @"url": url}];
+    } else {
+        NSLog(@"Description: %@",[error description]);
+        NSLog(@"LocalizedDescription: %@",[error localizedDescription]);
+        [self sendEventWithName:EVENT_FINISHED_LOADING body:@{@"success": [NSNumber numberWithBool:false], @"iosErrorCode": [NSNumber numberWithInteger:error.code], @"iosErrorDescription": [error localizedDescription]}];
+        [self sendEventWithName:EVENT_FINISHED_LOADING_URL body: @{@"success": [NSNumber numberWithBool:false], @"url": url, @"iosErrorCode": [NSNumber numberWithInteger:error.code], @"iosErrorDescription": [error localizedDescription]}];
     }
-
-    self.avPlayer = [[AVPlayer alloc] initWithURL:soundURL];
-    [self.player prepareToPlay];
-    [self sendEventWithName:EVENT_FINISHED_LOADING body:@{@"success": [NSNumber numberWithBool:true]}];
-    [self sendEventWithName:EVENT_FINISHED_LOADING_URL body: @{@"success": [NSNumber numberWithBool:true], @"url": url}];
 }
 
 RCT_EXPORT_MODULE();

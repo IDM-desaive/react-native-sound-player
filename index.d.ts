@@ -20,6 +20,8 @@ declare module "react-native-sound-player" {
     name?: string;
     type?: string;
     androidMediaError?: AndroidMediaPlayerError;
+    iosErrorCode?: number;
+    iosErrorDescription?: string;
   };
 
   interface SoundPlayerType {

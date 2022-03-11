@@ -2,7 +2,7 @@
 
 Play audio files, stream audio from URL, using ReactNative.
 
-This project is a fork of https://github.com/johnsonsu/react-native-sound-player, using ExoPlayer instead of MediaPlayer on Android.
+This project is a fork of https://github.com/johnsonsu/react-native-sound-player, using ExoPlayer instead of MediaPlayer on Android and fully using AVAudioPlayer on iOS.
 
 ## Installation
 
