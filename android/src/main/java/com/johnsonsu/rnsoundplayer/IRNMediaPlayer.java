@@ -3,6 +3,8 @@ package com.johnsonsu.rnsoundplayer;
 import android.media.MediaPlayer;
 import android.net.Uri;
 
+import com.facebook.react.bridge.Promise;
+
 import java.io.IOException;
 
 /**
@@ -18,6 +20,8 @@ public interface IRNMediaPlayer {
     void reset();
     void seekTo(final int msec);
     void setVolume(final float volume);
+    void getDeviceVolume(Promise promise);
+    void isDeviceMuted(Promise promise);
     long getCurrentPosition();
     long getDuration();
 

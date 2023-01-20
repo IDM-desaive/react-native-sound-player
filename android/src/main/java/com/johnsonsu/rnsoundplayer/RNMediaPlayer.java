@@ -2,9 +2,12 @@ package com.johnsonsu.rnsoundplayer;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 
 import java.io.IOException;
@@ -146,5 +149,24 @@ public class RNMediaPlayer implements IRNMediaPlayer {
         if (afd == null) return;
         mediaPlayer.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
         afd.close();
+    }
+
+    @Override
+    public void getDeviceVolume(Promise promise) {
+        AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        float pct = (float) currentVolume / (float) maxVolume;
+        promise.resolve(pct);
+    }
+
+    @Override
+    public void isDeviceMuted(Promise promise) {
+        AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            promise.resolve(audioManager.isStreamMute(AudioManager.STREAM_MUSIC));
+        } else {
+            promise.resolve(false);
+        }
     }
 }

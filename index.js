@@ -68,6 +68,10 @@ export default {
     callback: Function
   ) => _soundPlayerEmitter.addListener(eventName, callback),
 
+  isDeviceMuted: async () => RNSoundPlayer.isDeviceMuted(),
+
+  getDeviceVolume: async () => RNSoundPlayer.getDeviceVolume(),
+
   play: () => {
     // play and resume has the exact same implementation natively
     RNSoundPlayer.resume();

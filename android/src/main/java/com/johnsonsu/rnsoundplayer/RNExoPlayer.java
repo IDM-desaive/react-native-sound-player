@@ -4,6 +4,7 @@ import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
 
+import com.facebook.react.bridge.Promise;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
@@ -153,5 +154,19 @@ public class RNExoPlayer implements IRNMediaPlayer {
     public void setRawResourceId(int resourceId) throws IOException {
         final Uri uri = RawResourceDataSource.buildRawResourceUri(resourceId);
         setUri(uri);
+    }
+
+    @Override
+    public void isDeviceMuted(Promise promise) {
+        promise.resolve(exoPlayer.isDeviceMuted());
+    }
+
+    @Override
+    public void getDeviceVolume(Promise promise) {
+        int currentVolume = exoPlayer.getDeviceVolume();
+        int maxVolume = exoPlayer.getDeviceInfo().maxVolume;
+
+        float pct = (float) currentVolume / (float) maxVolume;
+        promise.resolve(pct);
     }
 }

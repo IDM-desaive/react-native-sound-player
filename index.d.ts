@@ -39,6 +39,11 @@ declare module "react-native-sound-player" {
       eventName: SoundPlayerEvent,
       callback: (data: SoundPlayerEventData) => void
     ) => EmitterSubscription;
+    /** Retrieve the current device volume (0.0: no sound, 1.0: max sound volume) **/
+    getDeviceVolume: () => Promise<number>;
+    /** Check if the device is muted or not */
+    isDeviceMuted: () => Promise<boolean>;
+
     /** Play the loaded sound file. This function is the same as `resume`. */
     play: () => void;
     /** Pause the currently playing file. */

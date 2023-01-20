@@ -113,6 +113,26 @@ public class RNSoundPlayerModule extends ReactContextBaseJavaModule {
     promise.resolve(map);
   }
 
+  @ReactMethod
+  public void isDeviceMuted(Promise promise) {
+    // Use a local variable
+    IRNMediaPlayer player = this.mediaPlayer;
+    if (player == null) {
+      player = createMediaPlayer();
+    }
+    player.isDeviceMuted(promise);
+  }
+
+  @ReactMethod
+  public void getDeviceVolume(Promise promise) {
+    // Use a local variable
+    IRNMediaPlayer player = this.mediaPlayer;
+    if (player == null) {
+      player = createMediaPlayer();
+    }
+    player.getDeviceVolume(promise);
+  }
+
   private void sendEvent(ReactApplicationContext reactContext,
           String eventName,
           @Nullable WritableMap params) {

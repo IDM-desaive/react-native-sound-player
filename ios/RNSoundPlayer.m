@@ -83,6 +83,18 @@ RCT_EXPORT_METHOD(setVolume:(float)volume) {
     }
 }
 
+RCT_EXPORT_METHOD(getDeviceVolume:(RCTPromiseResolveBlock) resolve
+    rejecter:(RCTPromiseRejectBlock) reject) {
+    float state = [AVAudioSession.sharedInstance outputVolume];
+    resolve(@(state));
+}
+
+RCT_EXPORT_METHOD(isDeviceMuted:(RCTPromiseResolveBlock) resolve
+                  rejecter:(RCTPromiseRejectBlock) reject) {
+    // TODO: implement
+    resolve(FALSE);
+}
+
 RCT_REMAP_METHOD(getInfo,
                  getInfoWithResolver:(RCTPromiseResolveBlock) resolve
                  rejecter:(RCTPromiseRejectBlock) reject) {
