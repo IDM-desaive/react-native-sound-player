@@ -91,8 +91,18 @@ RCT_EXPORT_METHOD(getDeviceVolume:(RCTPromiseResolveBlock) resolve
 
 RCT_EXPORT_METHOD(isDeviceMuted:(RCTPromiseResolveBlock) resolve
                   rejecter:(RCTPromiseRejectBlock) reject) {
-    // TODO: implement
-    resolve(FALSE);
+    self.muteChecker = [[MuteChecker alloc] initWithCompletionBlk:^(BOOL muted) {
+            resolve(muted ? @TRUE : @FALSE);
+        }];
+    @try {
+        [_muteChecker check];
+    }
+    @catch (NSException *e) {
+        reject(@"E_IS_DEVICE_MUTED", @"Error occured when checking is muted.", [NSError errorWithDomain:e.name code:0 userInfo:@{
+        NSUnderlyingErrorKey: e,
+        NSDebugDescriptionErrorKey: e.userInfo ?: @{ },
+        NSLocalizedFailureReasonErrorKey: (e.reason ?: @"???") }]);
+    }
 }
 
 RCT_REMAP_METHOD(getInfo,

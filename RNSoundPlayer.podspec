@@ -15,4 +15,6 @@ Pod::Spec.new do |s|
   s.preserve_paths = "package.json", "LICENSE"
   s.dependency 'React'
 
+  s.resource = "ios/ios_MuteChecker.caf"
+
 end

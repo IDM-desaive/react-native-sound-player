@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		11745F3B297AD35E0037BB66 /* MuteChecker.m in Sources */ = {isa = PBXBuildFile; fileRef = 11745F39297AD35E0037BB66 /* MuteChecker.m */; };
 		13BE3DEE1AC21097009241FE /* RNSoundPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 13BE3DED1AC21097009241FE /* RNSoundPlayer.m */; };
 /* End PBXBuildFile section */
 
@@ -23,6 +24,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		11745F38297AD35E0037BB66 /* ios_MuteChecker.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = ios_MuteChecker.caf; sourceTree = "<group>"; };
+		11745F39297AD35E0037BB66 /* MuteChecker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MuteChecker.m; sourceTree = "<group>"; };
+		11745F3A297AD35E0037BB66 /* MuteChecker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MuteChecker.h; sourceTree = "<group>"; };
 		134814201AA4EA6300B7C361 /* libRNSoundPlayer.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRNSoundPlayer.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		13BE3DEC1AC21097009241FE /* RNSoundPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNSoundPlayer.h; sourceTree = "<group>"; };
 		13BE3DED1AC21097009241FE /* RNSoundPlayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNSoundPlayer.m; sourceTree = "<group>"; };
@@ -50,6 +54,9 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
+				11745F38297AD35E0037BB66 /* ios_MuteChecker.caf */,
+				11745F3A297AD35E0037BB66 /* MuteChecker.h */,
+				11745F39297AD35E0037BB66 /* MuteChecker.m */,
 				13BE3DEC1AC21097009241FE /* RNSoundPlayer.h */,
 				13BE3DED1AC21097009241FE /* RNSoundPlayer.m */,
 				134814211AA4EA7D00B7C361 /* Products */,
@@ -95,6 +102,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 58B511D21A9E6C8500147676;
@@ -112,6 +120,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				11745F3B297AD35E0037BB66 /* MuteChecker.m in Sources */,
 				13BE3DEE1AC21097009241FE /* RNSoundPlayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
