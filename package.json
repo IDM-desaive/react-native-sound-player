@@ -1,6 +1,6 @@
 {
   "name": "react-native-sound-player",
-  "version": "0.10.10",
+  "version": "0.10.11",
   "description": "Play or stream audio files in ReactNative on iOS/Android",
   "homepage": "https://github.com/IDM-desaive/react-native-sound-player/blob/master/README.md",
   "main": "index.js",
